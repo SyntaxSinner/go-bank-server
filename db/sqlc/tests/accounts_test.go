@@ -1,15 +1,17 @@
-package db
+package tests
 
 import (
 	"context"
 	"testing"
+	"time"
 
+	"github.com/SyntaxSinner/BankCRUD_API/db/sqlc"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/stretchr/testify/require"
 )
 
-func RandomAccCreator(test *testing.T) Account {
-	var arg CreateAccountParams
+func RandomAccCreator(test *testing.T) sqlc.Account {
+	var arg sqlc.CreateAccountParams
 	gofakeit.Struct(&arg)
 	account, err := test_queries.CreateAccount(context.Background(), arg)
 
@@ -26,10 +28,13 @@ func RandomAccCreator(test *testing.T) Account {
 }
 
 func TestCreateAccount(test *testing.T) {
+	test.Log("Account Test - Starting CreateAccount test...")
 	RandomAccCreator(test)
 }
 
 func TestGetAccount(test *testing.T) {
+	test.Log("Account Test - Starting GetAccount test...")
+
 	account := RandomAccCreator(test)
 	account, err := test_queries.GetAccount(context.Background(), account.ID)
 	require.NoError(test, err)
@@ -40,5 +45,18 @@ func TestGetAccount(test *testing.T) {
 	require.Equal(test, account.Balance, account.Balance)
 	require.Equal(test, account.Currency, account.Currency)
 	require.NotZero(test, account.CreatedAt)
+	require.WithinDuration(test, account.CreatedAt, time.Now(), time.Second)
 
+}
+
+func TestDeleteAccount(test *testing.T) {
+	test.Log("Account Test - Starting DeleteAccount test...")
+
+	account := RandomAccCreator(test)
+	err := test_queries.DeleteAccount(context.Background(), account.ID)
+	require.NoError(test, err)
+
+	account, err = test_queries.GetAccount(context.Background(), account.ID)
+	require.Error(test, err)
+	require.Empty(test, account)
 }

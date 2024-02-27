@@ -1,4 +1,4 @@
-package db
+package tests
 
 import (
 	"database/sql"
@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/SyntaxSinner/BankCRUD_API/db/sqlc"
 	_ "github.com/lib/pq"
 )
 
@@ -14,15 +15,18 @@ const (
 	dbSource = "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable"
 )
 
-var test_queries *Queries
+var test_queries *sqlc.Queries
+var test_db *sql.DB
 
 func TestMain(m *testing.M) {
-	conn, err := sql.Open(dbDriver, dbSource)
+	var err error
+	test_db, err = sql.Open(dbDriver, dbSource)
+
 	if err != nil {
 		log.Fatal("Could not coonect to the database:", err)
 	}
-	test_queries = New(conn)
+
+	test_queries = sqlc.New(test_db)
 
 	os.Exit(m.Run())
-
 }
