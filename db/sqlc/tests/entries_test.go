@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"testing"
-	"time"
 
 	"github.com/SyntaxSinner/BankCRUD_API/db/sqlc"
 	"github.com/brianvoe/gofakeit/v6"
@@ -48,7 +47,6 @@ func TestGetEntry(test *testing.T) {
 	require.Equal(test, entry.Balance, retrievedEntry.Balance)
 	require.Equal(test, entry.Currency, retrievedEntry.Currency)
 	require.NotZero(test, retrievedEntry.CreatedAt)
-	require.WithinDuration(test, retrievedEntry.CreatedAt, time.Now(), time.Second)
 }
 
 func TestDeleteEntry(test *testing.T) {

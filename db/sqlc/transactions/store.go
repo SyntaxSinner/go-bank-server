@@ -64,7 +64,7 @@ func (store *Store) TransferTx(ctx context.Context, args TransferTxParams) (Tran
 			return err
 		}
 		//retrieve the receiver account from the database to check if the account exists
-		_, err = q.GetAccount(ctx, args.ToAccountID)
+		to_account, err := q.GetAccount(ctx, args.ToAccountID)
 		if err != nil {
 			return err
 		}
@@ -84,6 +84,7 @@ func (store *Store) TransferTx(ctx context.Context, args TransferTxParams) (Tran
 		if err != nil {
 			return err
 		}
+
 		result.FromEntry, err = q.CreateEntry(ctx, sqlc.CreateEntryParams{
 			AccountID: sql.NullInt64{Int64: args.FromAccountID, Valid: true},
 			Balance:   -args.Amount,
@@ -94,7 +95,7 @@ func (store *Store) TransferTx(ctx context.Context, args TransferTxParams) (Tran
 
 		// 2) create the transfer record
 		result.Transfer, err = q.CreateTransfer(ctx, sqlc.CreateTransferParams{
-			FromAccountID: sql.NullInt64{Int64: args.FromAccountID, Valid: true},
+			FromAccountID: sql.NullInt64{Int64: args.FromAccountID, Valid: true}, //we set valid to true since we proved that both of the accounts exist
 			ToAccountID:   sql.NullInt64{Int64: args.ToAccountID, Valid: true},
 			Amount:        args.Amount})
 		if err != nil {
@@ -104,14 +105,14 @@ func (store *Store) TransferTx(ctx context.Context, args TransferTxParams) (Tran
 		// 3) update the account balance
 		result.FromAccount, err = q.UpdateAccount(ctx, sqlc.UpdateAccountParams{
 			ID:      args.FromAccountID,
-			Balance: -args.Amount})
+			Balance: from_account.Balance - args.Amount})
 		if err != nil {
 			return err
 		}
 
 		result.ToAccount, err = q.UpdateAccount(ctx, sqlc.UpdateAccountParams{
 			ID:      args.ToAccountID,
-			Balance: args.Amount})
+			Balance: to_account.Balance + args.Amount})
 		if err != nil {
 			return err
 		}

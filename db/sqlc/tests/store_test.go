@@ -52,6 +52,42 @@ func TestTransferTx(test *testing.T) {
 		require.NotZero(test, transfer.ID)
 		require.NotZero(test, transfer.CreatedAt)
 
+		//test the entries
+
+		_, err = store.GetTransfer(context.Background(), transfer.ID)
+		require.NoError(test, err) //check wether the transfer exists
+
+		from_entry := result.FromEntry
+		require.NotEmpty(test, from_entry)
+		require.Equal(test, account1.ID, from_entry.AccountID.Int64)
+		require.Equal(test, -amount, from_entry.Balance)
+		require.NotZero(test, from_entry.ID)
+		require.NotZero(test, from_entry.CreatedAt)
+
+		_, err = store.GetEntry(context.Background(), from_entry.ID)
+		require.NoError(test, err) //check wether the entry exists
+
+		to_entry := result.ToEntry
+		require.NotEmpty(test, to_entry)
+		require.Equal(test, account2.ID, to_entry.AccountID.Int64)
+		require.Equal(test, amount, to_entry.Balance)
+		require.NotZero(test, to_entry.ID)
+		require.NotZero(test, to_entry.CreatedAt)
+
+		_, err = store.GetEntry(context.Background(), to_entry.ID)
+		require.NoError(test, err) //check wether the entry exists
+
+		//test the accounts
+		from_account := result.FromAccount
+		require.NotEmpty(test, from_account)
+		require.Equal(test, account1.ID, from_account.ID)
+		require.Equal(test, account1.Balance-amount, from_account.Balance)
+
+		to_account := result.ToAccount
+		require.NotEmpty(test, to_account)
+		require.Equal(test, account2.ID, to_account.ID)
+		require.Equal(test, account2.Balance+amount, to_account.Balance)
+
 	}
 
 }

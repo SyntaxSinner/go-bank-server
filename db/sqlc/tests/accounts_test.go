@@ -2,17 +2,18 @@ package tests
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/SyntaxSinner/BankCRUD_API/db/sqlc"
-	"github.com/brianvoe/gofakeit/v6"
+	"github.com/SyntaxSinner/BankCRUD_API/db/sqlc/utils"
 	"github.com/stretchr/testify/require"
 )
 
 func RandomAccCreator(test *testing.T) sqlc.Account {
-	var arg sqlc.CreateAccountParams
-	gofakeit.Struct(&arg)
+	arg := utils.To_account(utils.GenerateRandomOwner())
+	fmt.Print(arg)
 	account, err := test_queries.CreateAccount(context.Background(), arg)
 
 	require.NoError(test, err)
